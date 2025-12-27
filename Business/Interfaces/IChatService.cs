@@ -1,7 +1,5 @@
 ﻿
-using Entities;
-
-namespace Bussiness
+namespace Business
 {
     public interface IChatService
     {
