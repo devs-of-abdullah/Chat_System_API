@@ -18,7 +18,7 @@ namespace Data
 
                e.HasKey(u => u.Id);
 
-               e.Property(u => u.FullName).IsRequired().HasMaxLength(50);
+               e.Property(u => u.Username).IsRequired().HasMaxLength(50);
 
                e.Property(e => e.Email).IsRequired().HasMaxLength(100);
 

@@ -1,12 +1,62 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Business;
+using Entities;
+using Entities.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers
+namespace API
 {
-    public class UserController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserController : ControllerBase
     {
-        public IActionResult Index()
+        readonly IUserService _userService;
+
+        public UserController(IUserService userService)
         {
-            return View();
+            _userService = userService;
         }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserInControllerDto dto)
+        {
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var success = await _userService.Register( dto.Email, dto.Password);
+
+            if (!success) return BadRequest("Error creating User");
+
+            return Ok("User registered succesfully");
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var token = await _userService.Login(dto.Email, dto.Password);
+
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized("Email or password is incorrect");
+
+            return Ok(new
+            {
+                token
+            });
+        }
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult Me()
+        {
+            return Ok(new
+            {
+                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                Username = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value,
+                Email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+            });
+        }
+
+
     }
 }
