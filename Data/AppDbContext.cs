@@ -19,9 +19,9 @@ namespace Data
                e.HasKey(u => u.Id);
 
                e.Property(u => u.Username).IsRequired().HasMaxLength(50);
+               e.HasIndex(u => u.Username).IsUnique();
 
                e.Property(e => e.Email).IsRequired().HasMaxLength(100);
-
                e.HasIndex(u => u.Email).IsUnique();
            });
 

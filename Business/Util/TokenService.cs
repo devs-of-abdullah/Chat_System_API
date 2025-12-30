@@ -1,11 +1,12 @@
-﻿using Entities.DTOs;
+﻿
+using Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Business.Util
+namespace Business.Utils
 {
     public class TokenService
     {
@@ -14,18 +15,19 @@ namespace Business.Util
         {
             _config = config;
         }
-        public string CreateToken(UserDto user)
+        public string CreateToken(UserEntity user)
         {
             var Claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.GivenName, user.Username),
+                new Claim(ClaimTypes.Name,user.Username),
                 new Claim(ClaimTypes.Email, user.Email),
 
             };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]
+                ?? throw new InvalidOperationException("Jwt key is missing")));
 
-            var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
@@ -36,7 +38,7 @@ namespace Business.Util
 
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
-                
+
         }
     }
 }

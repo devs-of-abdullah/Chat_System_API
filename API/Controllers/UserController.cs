@@ -1,8 +1,8 @@
 ﻿using Business;
-using Entities;
 using Entities.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API
 {
@@ -18,45 +18,34 @@ namespace API
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserInControllerDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
-
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var success = await _userService.Register( dto.Email, dto.Password);
-
-            if (!success) return BadRequest("Error creating User");
-
-            return Ok("User registered succesfully");
+            await _userService.RegisterAsync(dto.Username, dto.Email, dto.Password);
+            return StatusCode(201, "User registered succesfully");
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var token = await _userService.Login(dto.Email, dto.Password);
+            var token = await _userService.LoginAsync(dto.Email, dto.Password);
 
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized("Email or password is incorrect");
-
-            return Ok(new
-            {
-                token
-            });
+            return Ok(new { token });
         }
+
         [Authorize]
         [HttpGet("me")]
         public IActionResult Me()
         {
             return Ok(new
             {
-                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-                Username = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value,
-                Email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                Username = User.FindFirst(ClaimTypes.Name)?.Value,
+                Email = User.FindFirst(ClaimTypes.Email)?.Value
             });
         }
 
 
     }
 }
+
