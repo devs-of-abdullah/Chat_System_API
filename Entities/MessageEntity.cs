@@ -13,7 +13,7 @@ namespace Entities
         public UserEntity Receiver { get; set; } = null!;
 
         
-        public string Content { get; set; } = null!;
+        public string Message { get; set; } = null!;
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
     
     }

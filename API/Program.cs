@@ -1,4 +1,7 @@
+using API;
 using Business;
+using Business.Interfaces;
+using Business.Services;
 using Business.Utils;
 using Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -23,10 +26,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddScoped<TokenService>();
+
+builder.Services.AddScoped<IMessageRepository,MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+
+builder.Services.AddScoped<IMessageNotifier, SignalRMessageNotifier>();
 
 
 
@@ -108,6 +118,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
+
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.UseAuthentication();
 app.UseAuthorization();

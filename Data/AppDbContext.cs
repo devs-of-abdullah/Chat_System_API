@@ -29,7 +29,7 @@ namespace Data
             {
                 e.HasKey(u => u.Id);
                
-                e.Property(m => m.Content).IsRequired().HasMaxLength(500);
+                e.Property(m => m.Message).IsRequired().HasMaxLength(500);
 
                 e.Property(m => m.SentAt).IsRequired();
 
