@@ -20,7 +20,7 @@ namespace API
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
-            await _userService.RegisterAsync(dto.Username, dto.Email, dto.Password);
+            await _userService.RegisterAsync(dto);
             return StatusCode(201, "User registered succesfully");
         }
 
@@ -28,7 +28,7 @@ namespace API
         public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
         {
 
-            var token = await _userService.LoginAsync(dto.Email, dto.Password);
+            var token = await _userService.LoginAsync(dto);
 
             return Ok(new { token });
         }
@@ -43,6 +43,38 @@ namespace API
                 Username = User.FindFirst(ClaimTypes.Name)?.Value,
                 Email = User.FindFirst(ClaimTypes.Email)?.Value
             });
+        }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            return Ok(await _userService.GetAllAsync());
+        }
+
+        [Authorize]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var user = _userService.GetByIdAsync(id);
+            return user == null ? NotFound() : Ok(user);
+
+        }
+
+        [Authorize]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _userService.DeleteAsync(id);
+            return NoContent();
+
+        }
+
+        [Authorize]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
+        {
+            await _userService.UpdateAsync(id, dto);
+            return NoContent();
         }
 
 

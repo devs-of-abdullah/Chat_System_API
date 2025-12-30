@@ -17,10 +17,8 @@ namespace Entities.DTOs
     }
     public class LoginUserDto
     {
-
         [Required, EmailAddress]
         public string Email { get; set; } = null!;
-
 
         [Required]
         public string Password { get; set; } = null!;
@@ -32,5 +30,10 @@ namespace Entities.DTOs
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
     }
-
+    public class UpdateUserDto
+    {
+        public string Username { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Password { get; set; } = null!;
+    }
 }
