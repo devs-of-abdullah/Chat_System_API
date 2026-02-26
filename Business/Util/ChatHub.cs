@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
-namespace API
+namespace Business
 {
     public class ChatHub : Hub
     {

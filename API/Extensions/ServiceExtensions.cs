@@ -15,7 +15,7 @@ public static class ServiceExtensions
          Environment.GetEnvironmentVariable("DefaultConnection") 
          ?? configuration.GetConnectionString("DefaultConnection")
          ?? throw new Exception("Database connection string not found.");
-
+        services.AddSignalR();
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Data")));
 
@@ -23,7 +23,9 @@ public static class ServiceExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITokenService,TokenService>();
-        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IMessageNotifier, MessageNotifier>();
 
         services.AddControllers()
             .AddJsonOptions(x =>
@@ -41,6 +43,7 @@ public static class ServiceExtensions
                       .AllowAnyMethod();
             });
         });
+
 
         return services;
     }

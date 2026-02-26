@@ -1,15 +1,15 @@
 ﻿
 
-using API;
+using Business;
 using Business.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Business.Services
 {
-    public class SignalRMessageNotifier : IMessageNotifier
+    public class MessageNotifier : IMessageNotifier
     {
         readonly IHubContext<ChatHub> _hub;
-        public SignalRMessageNotifier(IHubContext<ChatHub> hub)
+        public MessageNotifier(IHubContext<ChatHub> hub)
         {
             _hub = hub;
         }

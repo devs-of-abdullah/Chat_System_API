@@ -7,6 +7,9 @@ namespace DTOs
 
     public record CreateUserDTO
     {
+        [Required, MaxLength(50)]
+        public string Username { get; init; } = null!;
+
         [Required, EmailAddress, MaxLength(256)]
         public string Email { get; init; } = null!;
         [Required, MinLength(6)]

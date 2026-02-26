@@ -1,3 +1,4 @@
+using Business;
 using API.Extensions;
 using Data;
 using Microsoft.AspNetCore.Authorization;
@@ -43,5 +44,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

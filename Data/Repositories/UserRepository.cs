@@ -12,30 +12,30 @@ public class UserRepository : IUserRepository
     }
     public async Task<UserEntity?> GetByEmailAsync(string email)
     {
-        return await _context.users
+        return await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == email);
     }
     public async Task<UserEntity?> GetByIdAsync(int id)
     {
-        return await _context.users
+        return await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id );
     }
     public async Task<bool> ExistsByEmailAsync(string email)
     {
-        return await _context.users
+        return await _context.Users
             .AnyAsync(u => u.Email == email);
     }
     public async Task<int> CreateAsync(UserEntity user)
     {
-        await _context.users.AddAsync(user);
+        await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
         return user.Id;
     }
     public async Task UpdateAsync(UserEntity user)
     {
-        _context.users.Update(user);
+        _context.Users.Update(user);
         await _context.SaveChangesAsync();
     }
     

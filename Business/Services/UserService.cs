@@ -2,76 +2,79 @@
 using Data;
 using DTOs;
 using Entities;
+
 namespace Business.Services
 {
     public class UserService : IUserService
     {
-        readonly IUserRepository _repo;
+        private readonly IUserRepository _repo;
+
         public UserService(IUserRepository repo)
         {
             _repo = repo;
         }
+
         public async Task<int> CreateAsync(CreateUserDTO dto)
         {
-            if (await _repo.ExistsByEmailAsync(dto.Email))
-                throw new InvalidOperationException($"'{dto.Email}' email already exists");
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                throw new ArgumentException("Email is required");
 
+            if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+                throw new InvalidOperationException("Password must be at least 6 characters.");
+
+            var normalizedEmail = dto.Email.Trim().ToLower();
+
+            if (await _repo.ExistsByEmailAsync(normalizedEmail))
+                throw new InvalidOperationException($"'{normalizedEmail}' email already exists");
 
             var user = new UserEntity
             {
-                Email = dto.Email,
+                Username = dto.Username,
+                Email = normalizedEmail,
                 Role = dto.Role,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 12),
+                CreatedAt = DateTime.UtcNow
             };
 
             return await _repo.CreateAsync(user);
-
-
         }
+
         public async Task<ReadUserDTO?> GetByIdAsync(int id)
         {
             var user = await _repo.GetByIdAsync(id);
             if (user == null) return null;
 
-
-            return new ReadUserDTO
-            {
-                Id = user.Id,
-                Role = user.Role,
-                Email = user.Email,
-            };
+            return MapToReadDTO(user);
         }
+
         public async Task<ReadUserDTO?> GetByEmailAsync(string email)
         {
-            var user = await _repo.GetByEmailAsync(email);
+            var normalizedEmail = email.Trim().ToLower();
+            var user = await _repo.GetByEmailAsync(normalizedEmail);
+
             if (user == null) return null;
 
-            return new ReadUserDTO
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = user.Role,
-                CreatedAt = user.CreatedAt,
-                UpdatedAt = user.UpdatedAt,
-            };
+            return MapToReadDTO(user);
         }
-        public async Task SoftDeleteAsync(int Id, SoftUserDeleteDTO dto)
+
+        public async Task SoftDeleteAsync(int id, SoftUserDeleteDTO dto)
         {
-            var user = await _repo.GetByIdAsync(Id);
+            var user = await _repo.GetByIdAsync(id);
 
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
-            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-                throw new UnauthorizedAccessException("Current password is incorrect");
+            VerifyPassword(dto.CurrentPassword, user.PasswordHash);
 
             if (user.IsDeleted)
                 throw new InvalidOperationException("User already deleted");
 
             user.IsDeleted = true;
+            user.UpdatedAt = DateTime.UtcNow;
 
             await _repo.UpdateAsync(user);
         }
+
         public async Task UpdatePasswordAsync(int userId, UpdateUserPasswordDTO dto)
         {
             var user = await _repo.GetByIdAsync(userId);
@@ -79,33 +82,33 @@ namespace Business.Services
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
-            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-                throw new UnauthorizedAccessException("Current password is incorrect");
-
-            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
-                throw new InvalidOperationException("New password cannot be same as old password");
+            VerifyPassword(dto.CurrentPassword, user.PasswordHash);
 
             if (dto.NewPassword.Length < 6)
                 throw new InvalidOperationException("Password must be at least 6 characters.");
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword, workFactor: 12);
+            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
+                throw new InvalidOperationException("New password cannot be same as old password");
 
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword, workFactor: 12);
             user.UpdatedAt = DateTime.UtcNow;
 
             await _repo.UpdateAsync(user);
         }
+
         public async Task UpdateRoleAsync(int id, UpdateUserRoleDTO dto)
         {
-
             var user = await _repo.GetByIdAsync(id);
 
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
             user.Role = dto.NewRole;
-            await _repo.UpdateAsync(user);
+            user.UpdatedAt = DateTime.UtcNow;
 
+            await _repo.UpdateAsync(user);
         }
+
         public async Task UpdateEmailAsync(int userId, UpdateUserEmailDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.NewEmail))
@@ -121,8 +124,7 @@ namespace Business.Services
             if (user.IsDeleted)
                 throw new InvalidOperationException("User account is deleted");
 
-            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-                throw new UnauthorizedAccessException("Password is incorrect");
+            VerifyPassword(dto.CurrentPassword, user.PasswordHash);
 
             if (user.Email == normalizedEmail)
                 throw new InvalidOperationException("New email cannot be same as current email");
@@ -138,6 +140,22 @@ namespace Business.Services
             await _repo.UpdateAsync(user);
         }
 
-    }
+        private static void VerifyPassword(string inputPassword, string storedHash)
+        {
+            if (!BCrypt.Net.BCrypt.Verify(inputPassword, storedHash))
+                throw new UnauthorizedAccessException("Password is incorrect");
+        }
 
+        private static ReadUserDTO MapToReadDTO(UserEntity user)
+        {
+            return new ReadUserDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            };
+        }
+    }
 }
