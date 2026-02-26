@@ -1,5 +1,5 @@
 ﻿using Business;
-using Entities.DTOs;
+using DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

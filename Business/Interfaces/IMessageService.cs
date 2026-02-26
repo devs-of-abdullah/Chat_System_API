@@ -1,6 +1,5 @@
 ﻿
-using Entities.DTOs;
-
+using DTOs;
 namespace Business
 {
     public interface IMessageService

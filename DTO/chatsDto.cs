@@ -1,5 +1,5 @@
 ﻿
-namespace Entities.DTOs
+namespace DTOs
 {
 
     public class MessageDto

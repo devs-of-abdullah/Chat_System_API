@@ -1,5 +1,5 @@
 ﻿using Business;
-using Entities.DTOs;
+using DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

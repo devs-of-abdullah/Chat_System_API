@@ -1,5 +1,5 @@
 ﻿
-using Entities.DTOs;
+using DTOs;
 
 namespace Business
 {

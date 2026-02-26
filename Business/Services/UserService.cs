@@ -1,7 +1,7 @@
 ﻿using Business.Utils;
 using Data;
 using Entities;
-using Entities.DTOs;
+using DTOs;
 namespace Business
 {
     public class UserService : IUserService
