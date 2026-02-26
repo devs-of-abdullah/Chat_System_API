@@ -1,83 +1,112 @@
-﻿using Business;
+using Business.Interfaces;
 using DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
-namespace API
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    private readonly IUserService _userService;
+    private readonly IAuthorizationService _authorizationService;
+
+    public UsersController(IUserService userService, IAuthorizationService authorizationService)
     {
-        readonly IUserService _userService;
-
-        public UserController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
-        {
-            await _userService.RegisterAsync(dto);
-            return StatusCode(201, "User registered succesfully");
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
-        {
-
-            var token = await _userService.LoginAsync(dto);
-
-            return Ok(new { token });
-        }
-
-        [Authorize]
-        [HttpGet("me")]
-        public IActionResult Me()
-        {
-            return Ok(new
-            {
-                UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                Username = User.FindFirst(ClaimTypes.Name)?.Value,
-                Email = User.FindFirst(ClaimTypes.Email)?.Value
-            });
-        }
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            return Ok(await _userService.GetAllAsync());
-        }
-
-        [Authorize]
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var user = _userService.GetByIdAsync(id);
-            return user == null ? NotFound() : Ok(user);
-
-        }
-
-        [Authorize]
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _userService.DeleteAsync(id);
-            return NoContent();
-
-        }
-
-        [Authorize]
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
-        {
-            await _userService.UpdateAsync(id, dto);
-            return NoContent();
-        }
+        _userService = userService;
+        _authorizationService = authorizationService;
+    }
 
 
+    [HttpGet("{id:int}", Name = "GetUserById")]
+    
+    [EnableRateLimiting("AuthLimiter")]
+
+    public async Task<ActionResult<ReadUserDTO>> GetById(int id, [FromServices] IAuthorizationService authorizationService)
+    {
+        if (id <= 0)
+            return BadRequest("Invalid user ID.");
+
+        var user = await _userService.GetByIdAsync(id);
+        if (user == null)
+            return NotFound("User not found.");
+
+        var authResult = await authorizationService.AuthorizeAsync(User, id, "UserOwnerOrAdmin");
+
+        if (!authResult.Succeeded) return Forbid();
+
+        return Ok(user);
+    }
+
+    
+    [HttpPost(Name = "CreateUser")]
+    [EnableRateLimiting("AuthLimiter")]
+
+    public async Task<ActionResult<ReadUserDTO>> Create([FromBody] CreateUserDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existingUser = await _userService.GetByEmailAsync(dto.Email);
+        if (existingUser != null)
+            return Conflict("User email already exists.");
+
+        var createdId = await _userService.CreateAsync(dto);
+        if (createdId <= 0)
+            return BadRequest("Error while creating user.");
+
+        var createdUser = await _userService.GetByIdAsync(createdId);
+
+        return CreatedAtRoute("GetUserById", new { id = createdId }, createdUser);
+    }
+
+  
+    [Authorize]
+    [HttpPut("change-password", Name = "ChangeUserPassword")]
+    [EnableRateLimiting("AuthLimiter")]
+
+    public async Task<IActionResult> ChangePassword([FromBody] UpdateUserPasswordDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        await _userService.UpdatePasswordAsync(userId, dto);
+
+        return NoContent();
+    }
+
+    [Authorize]
+    [HttpDelete("self", Name = "SelfDelete")]
+    public async Task<IActionResult> SelfDelete([FromBody] SoftUserDeleteDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        await _userService.SoftDeleteAsync(userId, dto);
+
+        return NoContent();
+    }
+
+
+    [Authorize(Roles = "admin")]
+    [HttpDelete("{id:int}", Name = "OutDelete")]
+    public async Task<IActionResult> OutDelete(int id, [FromBody] SoftUserDeleteDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        await _userService.SoftDeleteAsync(id, dto);
+
+        return NoContent();
     }
 }
-

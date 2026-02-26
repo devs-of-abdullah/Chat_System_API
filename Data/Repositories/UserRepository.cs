@@ -1,57 +1,42 @@
-﻿
-
-using Entities;
+﻿using Entities;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 
-namespace Data
+namespace Data;
+
+public class UserRepository : IUserRepository
 {
-    public class UserRepository : IUserRepository
+    readonly AppDbContext _context;
+    public UserRepository(AppDbContext context)
     {
-        readonly AppDbContext _context;
-        public UserRepository(AppDbContext context) => _context = context;
-        public async Task<UserEntity?> GetByEmailAsync(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        }
-        public async Task<UserEntity?> GetByIdAsync(int id)
-        {
-            return await _context.Users.FindAsync(id);
-        }
-        public async Task<bool> ExistsByEmailAsync(string email)
-        {
-            return await _context.Users.AnyAsync(u => u.Email == email);
-
-        }
-        public async Task<bool> ExistsByUsernameAsync(string username)
-        {
-            return await _context.Users.AnyAsync(u => u.Username == username);
-        }
-        public async Task<int> AddAsync(UserEntity user)
-        {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return user.Id;
-        }
-        public async Task UpdateAsync(UserEntity user)
-        {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-        }
-        public async Task DeleteAsync(int id)
-        {
-            var user = await _context.Users.FindAsync(id)
-                ?? throw new KeyNotFoundException("User not found");
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-        }
-        public async Task<List<UserEntity>> GetAllAsync()
-        {
-            return await _context.Users.ToListAsync();
-        }
-
+        _context = context;
     }
+    public async Task<UserEntity?> GetByEmailAsync(string email)
+    {
+        return await _context.users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email);
+    }
+    public async Task<UserEntity?> GetByIdAsync(int id)
+    {
+        return await _context.users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == id );
+    }
+    public async Task<bool> ExistsByEmailAsync(string email)
+    {
+        return await _context.users
+            .AnyAsync(u => u.Email == email);
+    }
+    public async Task<int> CreateAsync(UserEntity user)
+    {
+        await _context.users.AddAsync(user);
+        await _context.SaveChangesAsync();
+        return user.Id;
+    }
+    public async Task UpdateAsync(UserEntity user)
+    {
+        _context.users.Update(user);
+        await _context.SaveChangesAsync();
+    }
+    
 }
-
