@@ -1,17 +1,15 @@
-# Chat System
+# Chat System – Real‑time Messaging API
 
 **Overview**
-- This Project is a real time **Chat System** APIs built with ASP.NET Core, SignalR following clean, layered architecture.
-- It simulates CRUD operations for users, send and receive messages instantly and many other functions.
-- The goal of this project is to demonstrate my development skills, data management, and business logic handling.
+- This Project is a real time **Chat System** APIs built with ASP.NET Core, SignalR following clean, layered architecture and Authentication system.
+- Users can send and receive messages instantly with secure JWT authentication.
 
 **Features**
-- Create and manage users
-- Real time user-to-user messaging
-- SignalR hub based communication
-- Layered architechure
-- DTO based data transfer
-- Validations
+- User registration & login (JWT)
+- Real‑time user‑to‑user messaging via SignalR
+- Message history between two users
+- Layered architecture (Entities, DTOs, Data, Business, API)
+- DTO validation and EF Core data access
 
 **Tech Stack**
 - ASP.NET Core
@@ -19,6 +17,8 @@
 - C#
 - Clean architechure principles
 - SignaR
+- JWT Authentication
+
 
 **What I Learned**
 - Designing business rules for chat systems
