@@ -1,29 +1,46 @@
 ﻿using Business;
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/messages")]
-    public class MessageController : Controller
+    [Route("api/[controller]")]
+    [Authorize]  
+    public class MessagesController : ControllerBase
     {
-        readonly IMessageService _service;
-        public MessageController(IMessageService service)
-        { 
+        private readonly IMessageService _service;
+
+        public MessagesController(IMessageService service)
+        {
             _service = service;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Send(int senderId,SendMessageDto dto)
+        [Authorize]
+        public async Task<IActionResult> Send(SendMessageDto dto)
         {
-            await _service.SendAsync(senderId, dto);
+            var senderId = GetCurrentUserId();
+            await _service.SendMessageAsync(senderId, dto);
             return Ok();
         }
-        [HttpGet]
-        public async Task<IActionResult> Conversation(int userId, int otherUserId)
+
+        [HttpGet("conversation")]
+        public async Task<IActionResult> GetConversation([FromQuery] int otherUserId)
         {
-            return Ok(await _service.GetConversationAsync(userId,otherUserId));
+            var userId = GetCurrentUserId();
+            var messages = await _service.GetConversationAsync(userId, otherUserId);
+            return Ok(messages);
+        }
+
+        int GetCurrentUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null || !int.TryParse(claim.Value, out var userId))
+                throw new UnauthorizedAccessException("User ID not found in token.");
+            return userId;
         }
     }
 }

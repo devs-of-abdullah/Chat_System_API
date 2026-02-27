@@ -1,9 +1,9 @@
-using Business;
+
 using API.Extensions;
 using Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-
+using Business.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +44,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

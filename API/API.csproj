@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Business\Business.csproj" />
+    <ProjectReference Include="..\Business\Bussiness.csproj" />
     <ProjectReference Include="..\DTO\DTOs.csproj" />
   </ItemGroup>
 

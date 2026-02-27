@@ -5,7 +5,7 @@ namespace Data
 {
     public interface IMessageRepository
     {
-        Task AddAsync(MessageEntity message);
-        Task<List<MessageEntity>> GetConversationAsync(int userId, int otherUserId);
+        Task CreateMessageAsync(MessageEntity message);
+        Task<List<MessageEntity>> GetConversationAsync(int currentUserId, int otherUserId);
     }
 }

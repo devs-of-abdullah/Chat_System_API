@@ -1,9 +1,6 @@
-﻿
-
-using Business;
-using Business.Interfaces;
+﻿using Business.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-
+using Business.Hubs;
 namespace Business.Services
 {
     public class MessageNotifier : IMessageNotifier

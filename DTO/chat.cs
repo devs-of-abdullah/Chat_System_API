@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace DTOs
 {
 
@@ -14,10 +16,12 @@ namespace DTOs
     }
     public class SendMessageDto
     {
+        [Required]
         public int ReceiverId { get; set; }
-        public string Message { get; set; } = string.Empty;
 
+        [Required,MaxLength(500, ErrorMessage = "Message cannot exceed 500 characters.")]
+        public string Message { get; set; } = string.Empty;
     }
 
-  
+
 }
