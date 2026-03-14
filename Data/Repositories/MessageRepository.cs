@@ -14,7 +14,7 @@ namespace Data
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
         }
-        public async Task<List<MessageEntity>> GetConversationAsync(int currentUser,int otherUserId)
+        public async Task<List<MessageEntity>> GetChatAsync(int currentUser,int otherUserId)
         {
             return await _context.Messages.AsNoTracking().Include(m => m.Sender).Include(m => m.Receiver)
                 .Where(m => 
@@ -23,6 +23,15 @@ namespace Data
                 )
                 .OrderBy(m => m.SentAt).ToListAsync();
            
+        }
+        public async Task<List<AIMessageEntity>> GetAIChatAsync(int currentUser)
+        { 
+            return await _context.AIMessages.AsNoTracking().Where(r => r.ReceiverId == currentUser).ToListAsync();
+        }
+        public async Task CreateAIChatAsync(AIMessageEntity message)
+        {
+            await _context.AIMessages.AddAsync(message);
+            await _context.SaveChangesAsync();
         }
     }
 }

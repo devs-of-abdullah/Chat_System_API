@@ -22,6 +22,21 @@ namespace DTOs
         [Required,MaxLength(500, ErrorMessage = "Message cannot exceed 500 characters.")]
         public string Message { get; set; } = string.Empty;
     }
+    public class AIMessageDto
+    {
+        public int Id { get; set; }
+        public int ReceiverId { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Response { get; set; } = string.Empty;
+        public DateTime SentAt { get; set; }
+
+    }
+    public class SendAIMessageAsync
+    {
+        [Required, MaxLength(500, ErrorMessage = "Input cannot exceed 500 characters.")]
+        public string Message { get; set; } = string.Empty;
+    }
+ 
 
 
 }

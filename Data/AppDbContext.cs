@@ -9,6 +9,7 @@ namespace Data
 
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<MessageEntity> Messages { get; set; }
+        public DbSet<AIMessageEntity> AIMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -16,6 +17,7 @@ namespace Data
 
             ConfigureUser(modelBuilder);
             ConfigureMessage(modelBuilder);
+            ConfigureAIMessage(modelBuilder);
         }
 
         private void ConfigureUser(ModelBuilder modelBuilder)
@@ -81,6 +83,30 @@ namespace Data
                       .WithMany()
                       .HasForeignKey(m => m.SenderId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(m => m.Receiver)
+                      .WithMany()
+                      .HasForeignKey(m => m.ReceiverId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+        }
+        private void ConfigureAIMessage(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<AIMessageEntity>(entity =>
+            {
+                entity.ToTable("Messages");
+
+                entity.HasKey(m => m.Id);
+
+                entity.Property(m => m.Input)
+                      .IsRequired()
+                      .HasMaxLength(500);
+
+                entity.Property(m => m.SentAt)
+                      .IsRequired();
+
+                entity.HasIndex(m => m.ReceiverId);
+                entity.HasIndex(m => m.SentAt);              
 
                 entity.HasOne(m => m.Receiver)
                       .WithMany()

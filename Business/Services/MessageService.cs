@@ -55,7 +55,7 @@ namespace Business
         {
             try
             {
-                var data = await _repo.GetConversationAsync(userId, otherUserId);
+                var data = await _repo.GetChatAsync(userId, otherUserId);
                 return data.Select(m => new MessageDto
                 {
                     Id = m.Id,
