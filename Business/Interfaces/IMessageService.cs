@@ -1,13 +1,11 @@
-﻿
-using DTOs;
+﻿using DTOs;
 namespace Business
 {
     public interface IMessageService
     {
         Task SendMessageAsync(int senderId, SendMessageDto dto);
-        Task<List<MessageDto>> GetConversationAsync(int userId,int otherUserId);
-
-      
+        Task<List<MessageDto>> GetConversationAsync(int userId, int otherUserId);
+        Task<object?> SendAIMessageAsync(int senderId, SendAIMessageDto dto);
 
     }
 }

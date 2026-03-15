@@ -12,7 +12,7 @@ namespace Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "users",
+                name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -24,13 +24,35 @@ namespace Data.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RefreshTokenHash = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    RefreshTokenHash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     RefreshTokenExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RefreshTokenRevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AIMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ReceiverId = table.Column<int>(type: "int", nullable: false),
+                    Input = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Output = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AIMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AIMessages_Users_ReceiverId",
+                        column: x => x.ReceiverId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -48,18 +70,28 @@ namespace Data.Migrations
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Messages_users_ReceiverId",
+                        name: "FK_Messages_Users_ReceiverId",
                         column: x => x.ReceiverId,
-                        principalTable: "users",
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Messages_users_SenderId",
+                        name: "FK_Messages_Users_SenderId",
                         column: x => x.SenderId,
-                        principalTable: "users",
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AIMessages_ReceiverId",
+                table: "AIMessages",
+                column: "ReceiverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AIMessages_SentAt",
+                table: "AIMessages",
+                column: "SentAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ReceiverId",
@@ -72,14 +104,19 @@ namespace Data.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_users_Email",
-                table: "users",
+                name: "IX_Messages_SentAt",
+                table: "Messages",
+                column: "SentAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_users_RefreshTokenHash",
-                table: "users",
+                name: "IX_Users_RefreshTokenHash",
+                table: "Users",
                 column: "RefreshTokenHash",
                 unique: true,
                 filter: "[RefreshTokenHash] IS NOT NULL");
@@ -89,10 +126,13 @@ namespace Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AIMessages");
+
+            migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "users");
+                name: "Users");
         }
     }
 }

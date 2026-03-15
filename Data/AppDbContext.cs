@@ -5,7 +5,7 @@ namespace Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)  : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<MessageEntity> Messages { get; set; }
@@ -56,7 +56,7 @@ namespace Data
 
                 entity.HasQueryFilter(u => !u.IsDeleted);
 
-              
+
             });
         }
 
@@ -94,7 +94,7 @@ namespace Data
         {
             modelBuilder.Entity<AIMessageEntity>(entity =>
             {
-                entity.ToTable("Messages");
+                entity.ToTable("AIMessages");
 
                 entity.HasKey(m => m.Id);
 
@@ -106,12 +106,13 @@ namespace Data
                       .IsRequired();
 
                 entity.HasIndex(m => m.ReceiverId);
-                entity.HasIndex(m => m.SentAt);              
-
+                entity.HasIndex(m => m.SentAt);
+    
                 entity.HasOne(m => m.Receiver)
-                      .WithMany()
-                      .HasForeignKey(m => m.ReceiverId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .IsRequired(false)
+                   .HasForeignKey(m => m.ReceiverId)
+                   .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260226145437_InitialCreate")]
+    [Migration("20260315140459_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,6 +24,37 @@ namespace Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Entities.AIMessageEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Input")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Output")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ReceiverId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SentAt");
+
+                    b.ToTable("AIMessages", (string)null);
+                });
 
             modelBuilder.Entity("Entities.MessageEntity", b =>
                 {
@@ -53,7 +84,9 @@ namespace Data.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.HasIndex("SentAt");
+
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Entities.UserEntity", b =>
@@ -85,7 +118,8 @@ namespace Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("RefreshTokenHash")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("RefreshTokenRevokedAt")
                         .HasColumnType("datetime2");
@@ -111,7 +145,17 @@ namespace Data.Migrations
                         .IsUnique()
                         .HasFilter("[RefreshTokenHash] IS NOT NULL");
 
-                    b.ToTable("users");
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Entities.AIMessageEntity", b =>
+                {
+                    b.HasOne("Entities.UserEntity", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Receiver");
                 });
 
             modelBuilder.Entity("Entities.MessageEntity", b =>

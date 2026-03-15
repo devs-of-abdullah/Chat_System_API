@@ -31,7 +31,7 @@ namespace DTOs
         public DateTime SentAt { get; set; }
 
     }
-    public class SendAIMessageAsync
+    public class SendAIMessageDto
     {
         [Required, MaxLength(500, ErrorMessage = "Input cannot exceed 500 characters.")]
         public string Message { get; set; } = string.Empty;

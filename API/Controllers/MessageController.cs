@@ -18,13 +18,23 @@ namespace API.Controllers
             _service = service;
         }
 
-        [HttpPost]
+        [HttpPost("p2p")]
         [Authorize]
-        public async Task<IActionResult> Send(SendMessageDto dto)
+        public async Task<IActionResult> SendMessage(SendMessageDto dto)
         {
             var senderId = GetCurrentUserId();
             await _service.SendMessageAsync(senderId, dto);
             return Ok();
+        }
+        [HttpPost("AI")]
+        [Authorize]
+        public async Task<IActionResult> SendAIMessage(SendAIMessageDto dto)
+        {
+            var senderId = GetCurrentUserId();
+           var res = await _service.SendAIMessageAsync(senderId, dto);
+        
+            if(res != null) return Ok(res);
+            return BadRequest();
         }
 
         [HttpGet("conversation")]
